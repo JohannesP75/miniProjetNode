@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>miniProjet API</title>
+        <script>
+            /*
+                Créer la table
+            */
+            function generate_table(listTasks){
+                var tableListTasks = document.getElementById("list_tasks");
+
+                while(tableListTasks.firstChild) {
+                    tableListTasks.removeChild(tableListTasks.firstChild);
+                }
+
+                listTasks.forEach((task)=>{
+                    let row=document.createElement("tr");
+
+                    let cell=document.createElement("td");
+                    cell.innerText=task["id"];
+                    row.appendChild(cell);
+
+                    cell=document.createElement("td");
+                    cell.innerText=task["name"];
+                    row.appendChild(cell);
+
+                    cell=document.createElement("td");
+                    cell.innerText=task["dueDate"];
+                    row.appendChild(cell);
+
+                    cell=document.createElement("td");
+                    cell.innerText=task["isDone"];
+                    row.appendChild(cell);
+
+                    tableListTasks.appendChild(row);
+                });
+            }
+
+            /*
+                Pour obtenir toutes les taches
+            */
+            function get_all_tasks(){
+                let listTasks=[];
+
+                fetch("http://localhost:3000/tasks").then((res)=>{
+                    return res.json();
+                }).then((data)=>{
+                    console.log(`data : ${data}`);
+                    
+                    generate_table(data);
+                });
+            }
+
+            /*
+                Pour obtenir seulement les taches non accomplies
+            */
+            function get_only_nondone_tasks(){
+                let listTasks=[];
+
+                fetch("http://localhost:3000/tasks/undone").then((res)=>{
+                    return res.json();
+                }).then((data)=>{
+                    console.log(`data : ${data}`);
+                    
+                    generate_table(data);
+                });
+            }
+
+            /*
+                Pour créer une nouvelle tache
+            */
+           async function create_task(){
+            let data={
+                name: document.getElementById("new_task_name").value,
+                dueDate: document.getElementById("new_task_date").value,
+                isDone: document.getElementById("new_task_done").checked.toString()
+            };
+
+            const response = await fetch("http://localhost:3000/new_task", {
+                method: "POST",
+                mode: "cors",
+                cache: "no-cache",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                redirect: "follow",
+                referrerPolicy: "no-referrer",
+                body: JSON.stringify(data),
+            });
+
+           }
+        </script>
+    </head>
+    <body>
+        <button onclick="get_all_tasks()">Full list</button>
+        <button onclick="get_only_nondone_tasks()">Partial list</button>
+        <table>
+            <thead>
+                <th>ID</th>
+                <th>Tache</th>
+                <th>Date</th>
+                <th>Accomplissement</th>
+                <th>Actions</th>
+            </thead>
+            <tbody id="list_tasks"></tbody>
+            <tfoot>
+                <th>Nouvelle tache : </th>
+                <th><input type="text" id="new_task_name"/></th>
+                <th><input type="date" id="new_task_date"/></th>
+                <th><input type="checkbox" id="new_task_done"/></th>
+                <th>
+                    <button onclick="create_task()">Créer une nouvelle tache</button>
+                </th>
+            </tfoot>
+        </table>
+    </body>
+</html>
